@@ -25,3 +25,13 @@
     - source venv/bin/activate
     - pip install -r requirements.txt
     - uvicorn main:app --reload
+
+
+
+## Accessing frontend
+- Copy and paste the following url in your browser
+    - http://127.0.0.1:8000/
+
+## Accessing the API Documentation
+- Copy and paste the following url in your browser
+    - http://127.0.0.1:8000/api/for/healthcarechatbot/docs#/

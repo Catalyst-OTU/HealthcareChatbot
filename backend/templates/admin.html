@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Admin Dashboard</h1>
+
+    {% if message %}
+        <div class="alert success">{{ message }}</div>
+    {% endif %}
+
+    {% if error %}
+        <div class="alert error">{{ error }}</div>
+    {% endif %}
+
+    <table class="complaints-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Patient</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Admin Comment</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for complaint in complaints %}
+            <tr>
+                <td>{{ complaint.Complaint_ID }}</td>
+                <td>{{ complaint.Patient_Name }}</td>
+                <td>{{ complaint.Complaint_Type }}</td>
+                <td>{{ complaint.Description }}</td>
+                <td>{{ complaint.Date_Submitted }}</td>
+                <td>{{ complaint.Status }}</td>
+                <td>{{ complaint.Admin_Comment }}</td>
+                <td>
+                    <form action="/admin/update" method="post">
+                        <input type="hidden" name="Complaint_ID" value="{{ complaint.Complaint_ID }}">
+                        <select name="Status">
+                            <option value="Pending" {% if complaint.Status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="In Progress" {% if complaint.Status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                            <option value="Resolved" {% if complaint.Status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                        </select>
+                        <input type="text" name="Admin_Comment" placeholder="Add comment">
+                        <button type="submit">Update</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from firebase_config import complaints_ref
+from config import get_current_admin
 from datetime import datetime
 import random
 
@@ -29,9 +30,60 @@ class Complaint(BaseModel):
     Complaint_Type: str
     Description: str
 
-# @app.get("/")
-# async def root():
-#     return {"message": "Healthcare Chatbot Backend is running ✅"}
+
+
+
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_dashboard(request: Request, admin: str = Depends(get_current_admin)):
+    all_complaints = complaints_ref.get() or {}
+    
+    # Convert Firebase dict to a list of complaints
+    complaints_list = [
+        {"Complaint_ID": cid, **data} for cid, data in all_complaints.items()
+    ]
+    
+    return templates.TemplateResponse(
+        "admin.html",
+        {"request": request, "complaints": complaints_list}
+    )
+
+
+
+@app.post("/admin/update", response_class=HTMLResponse)
+async def update_complaint(
+    request: Request,
+    Complaint_ID: str = Form(...),
+    Status: str = Form(...),
+    Admin_Comment: str = Form(""),
+    admin: str = Depends(get_current_admin)
+):
+    complaint = complaints_ref.child(Complaint_ID).get()
+    if not complaint:
+        return templates.TemplateResponse(
+            "admin.html",
+            {"request": request, "error": f"Complaint ID {Complaint_ID} not found."}
+        )
+
+    complaints_ref.child(Complaint_ID).update({
+        "Status": Status,
+        "Admin_Comment": Admin_Comment
+    })
+    
+    message = f"Complaint {Complaint_ID} updated successfully!"
+    all_complaints = complaints_ref.get() or {}
+    complaints_list = [{"Complaint_ID": cid, **data} for cid, data in all_complaints.items()]
+
+    return templates.TemplateResponse(
+        "admin.html",
+        {"request": request, "complaints": complaints_list, "message": message}
+    )
+
+
+
+
+
+
 
 # Serve frontend web page
 @app.get("/", response_class=HTMLResponse)
