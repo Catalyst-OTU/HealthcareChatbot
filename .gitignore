@@ -1,7 +1,7 @@
 __pycache__
 *.pyc
-env/
-venv/
+backend/env/
+backend/venv/
 .DS_Store
 .idea/
 .vscode/
