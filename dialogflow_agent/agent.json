@@ -1,0 +1,37 @@
+{
+  "displayName": "HealthcareChatbot",
+  "defaultLanguageCode": "en",
+  "timeZone": "Africa/Accra",
+  "intents": [
+    {
+      "name": "Welcome Intent",
+      "trainingPhrases": ["Hi", "Hello", "Hey"],
+      "responses": ["Hello! I’m your healthcare assistant. I can help you submit a complaint or check its status."]
+    },
+    {
+      "name": "Submit Complaint Intent",
+      "parameters": [
+        {"name": "Patient_Name", "required": true},
+        {"name": "Complaint_Type", "required": true},
+        {"name": "Description", "required": true},
+        {"name": "Date_Submitted", "required": true}
+      ],
+      "fulfillment": {
+        "webhook": "https://your-backend.com/submit_complaint"
+      }
+    },
+    {
+      "name": "Track Complaint Intent",
+      "parameters": [
+        {"name": "Complaint_ID", "required": true}
+      ],
+      "fulfillment": {
+        "webhook": "https://your-backend.com/track_complaint"
+      }
+    },
+    {
+      "name": "Fallback Intent",
+      "responses": ["Sorry, I didn’t understand. Could you rephrase that?"]
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+
+    <!-- Success message -->
+    {% if message %}
+        <div class="alert success">{{ message }}</div>
+    {% endif %}
+
+    <!-- Error message -->
+    {% if error %}
+        <div class="alert error">{{ error }}</div>
+    {% endif %}
+
+    <h2>Submit a Complaint</h2>
+    <form action="/web/submit" method="post" class="complaint-form">
+        <label>Patient Name</label>
+        <input type="text" name="Patient_Name" required>
+
+        <label>Complaint Type</label>
+        <input type="text" name="Complaint_Type" required>
+
+        <label>Description</label>
+        <textarea name="Description" rows="4" required></textarea>
+
+        <button type="submit">Submit Complaint</button>
+    </form>
+
+    <hr>
+
+    <h2>Track a Complaint</h2>
+    <form action="/web/track" method="post" class="complaint-form">
+        <label>Complaint ID</label>
+        <input type="text" name="Complaint_ID" placeholder="e.g. CMP-6446" required>
+
+        <button type="submit">Track Complaint</button>
+    </form>
+
+    <!-- Complaint Result -->
+    {% if complaint %}
+        <div class="result">
+            <h3>Complaint Details</h3>
+            <p><strong>Complaint ID:</strong> {{ complaint_id }}</p>
+            <p><strong>Patient Name:</strong> {{ complaint.Patient_Name }}</p>
+            <p><strong>Complaint Type:</strong> {{ complaint.Complaint_Type }}</p>
+            <p><strong>Description:</strong> {{ complaint.Description }}</p>
+            <p><strong>Date Submitted:</strong> {{ complaint.Date_Submitted }}</p>
+            <p><strong>Status:</strong> {{ complaint.Status }}</p>
+            <p><strong>Admin Comment:</strong> {{ complaint.Admin_Comment or "No comment yet" }}</p>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

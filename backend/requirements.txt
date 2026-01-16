@@ -1,0 +1,9 @@
+fastapi==0.111.1
+uvicorn==0.25.0
+pyrebase4==4.5.0
+pydantic==2.6.1
+python-dotenv==1.0.1
+setuptools
+jinja2 
+python-multipart
+firebase-admin
