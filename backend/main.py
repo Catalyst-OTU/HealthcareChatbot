@@ -7,8 +7,12 @@ from firebase_config import complaints_ref
 from datetime import datetime
 import random
 
-app = FastAPI(title="Healthcare Chatbot Backend")
-
+app = FastAPI(
+    title="Healthcare Chatbot Backend",
+    docs_url="/api/for/healthcarechatbot/docs",
+    redoc_url="/api/for/healthcarechatbot/redoc",
+    openapi_url="/api/for/healthcarechatbot/openapi.json"
+)
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -25,12 +29,12 @@ class Complaint(BaseModel):
     Complaint_Type: str
     Description: str
 
-@app.get("/")
-async def root():
-    return {"message": "Healthcare Chatbot Backend is running ✅"}
+# @app.get("/")
+# async def root():
+#     return {"message": "Healthcare Chatbot Backend is running ✅"}
 
 # Serve frontend web page
-@app.get("/web", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse)
 async def web(request: Request):
     return templates.TemplateResponse("web.html", {"request": request})
 
