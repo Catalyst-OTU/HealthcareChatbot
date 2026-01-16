@@ -41,7 +41,7 @@ class Complaint(BaseModel):
 ## Updated main.py (additions for admin dashboard, auth, and API endpoints
 
 # Add session middleware (change secret_key to something secure)
-app.add_middleware(SessionMiddleware, secret_key="your-secret-key-here")
+app.add_middleware(SessionMiddleware, secret_key="41c262131ae9d442e46dcfa6711605b5c350a9e463d29cc4d0cc5a78d1c57545")
 
 # Hardcoded admin credentials (change these in production!)
 ADMIN_USERNAME = "admin"

@@ -1,17 +1,72 @@
-
 {% extends "base.html" %}
+
+{% block title %}Admin Login{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <i class="fas fa-heartbeat"></i>
+            <span>Healthcare Portal</span>
+        </div>
+    </div>
+    <div class="sidebar-profile">
+        <div class="profile-icon">
+            <i class="fas fa-user-shield"></i>
+        </div>
+        <div class="profile-info">
+            <div class="profile-name">Admin</div>
+            <div class="profile-role">Login Required</div>
+        </div>
+    </div>
+</aside>
+{% endblock %}
+
+{% block header %}
+<div class="page-header">
+    <h1 class="page-title">Admin Login</h1>
+</div>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    {% if error %}
-        <div class="alert error">{{ error }}</div>
-    {% endif %}
-    <h2>Admin Login</h2>
-    <form action="/login" method="post" class="complaint-form">
-        <label>Username</label>
-        <input type="text" name="username" required>
-        <label>Password</label>
-        <input type="password" name="password" required>
-        <button type="submit">Login</button>
-    </form>
+<div class="dashboard-container">
+    <div class="content-panel" style="max-width: 500px; margin: 50px auto;">
+        {% if error %}
+            <div class="alert error">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ error }}
+            </div>
+        {% endif %}
+        
+        <div class="panel-header">
+            <h2>
+                <i class="fas fa-lock"></i>
+                Administrator Access
+            </h2>
+        </div>
+        
+        <form action="/login" method="post" class="modern-form">
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-user"></i>
+                    Username
+                </label>
+                <input type="text" name="username" placeholder="Enter your username" required>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-key"></i>
+                    Password
+                </label>
+                <input type="password" name="password" placeholder="Enter your password" required>
+            </div>
+            
+            <button type="submit" class="btn-primary btn-block">
+                <i class="fas fa-sign-in-alt"></i>
+                Login
+            </button>
+        </form>
+    </div>
 </div>
 {% endblock %}

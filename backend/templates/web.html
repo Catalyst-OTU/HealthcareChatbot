@@ -1,55 +1,210 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="container">
+{% block title %}Patient Portal{% endblock %}
 
+{% block sidebar %}
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <i class="fas fa-heartbeat"></i>
+            <span>Healthcare Portal</span>
+        </div>
+    </div>
+    <div class="sidebar-profile">
+        <div class="profile-icon">
+            <i class="fas fa-user-injured"></i>
+        </div>
+        <div class="profile-info">
+            <div class="profile-name">Patient</div>
+            <div class="profile-role">Portal Access</div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <div class="nav-label">MAIN</div>
+            <a href="/" class="nav-link active">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="/" class="nav-link" onclick="document.getElementById('track-form').scrollIntoView(); return false;">
+                <i class="fas fa-search"></i>
+                <span>Track Complaint</span>
+            </a>
+        </div>
+    </nav>
+</aside>
+{% endblock %}
+
+{% block header %}
+<div class="page-header">
+    <h1 class="page-title">Patient Portal</h1>
+    <div class="header-actions">
+        <button class="btn-icon" onclick="location.reload()">
+            <i class="fas fa-sync-alt"></i>
+            Refresh
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
     <!-- Success message -->
     {% if message %}
-        <div class="alert success">{{ message }}</div>
+        <div class="alert success">
+            <i class="fas fa-check-circle"></i>
+            {{ message }}
+        </div>
     {% endif %}
 
     <!-- Error message -->
     {% if error %}
-        <div class="alert error">{{ error }}</div>
-    {% endif %}
-
-    <h2>Submit a Complaint</h2>
-    <form action="/web/submit" method="post" class="complaint-form">
-        <label>Patient Name</label>
-        <input type="text" name="Patient_Name" required>
-
-        <label>Complaint Type</label>
-        <input type="text" name="Complaint_Type" required>
-
-        <label>Description</label>
-        <textarea name="Description" rows="4" required></textarea>
-
-        <button type="submit">Submit Complaint</button>
-    </form>
-
-    <hr>
-
-    <h2>Track a Complaint</h2>
-    <form action="/web/track" method="post" class="complaint-form">
-        <label>Complaint ID</label>
-        <input type="text" name="Complaint_ID" placeholder="e.g. CMP-6446" required>
-
-        <button type="submit">Track Complaint</button>
-    </form>
-
-    <!-- Complaint Result -->
-    {% if complaint %}
-        <div class="result">
-            <h3>Complaint Details</h3>
-            <p><strong>Complaint ID:</strong> {{ complaint_id }}</p>
-            <p><strong>Patient Name:</strong> {{ complaint.Patient_Name }}</p>
-            <p><strong>Complaint Type:</strong> {{ complaint.Complaint_Type }}</p>
-            <p><strong>Description:</strong> {{ complaint.Description }}</p>
-            <p><strong>Date Submitted:</strong> {{ complaint.Date_Submitted }}</p>
-            <p><strong>Status:</strong> {{ complaint.Status }}</p>
-            <p><strong>Admin Comment:</strong> {{ complaint.Admin_Comment or "No comment yet" }}</p>
+        <div class="alert error">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ error }}
         </div>
     {% endif %}
 
+    <div class="content-grid">
+        <!-- Submit Complaint Card -->
+        <div class="content-panel">
+            <div class="panel-header">
+                <h2>
+                    <i class="fas fa-file-medical"></i>
+                    Submit a Complaint
+                </h2>
+            </div>
+            <form action="/web/submit" method="post" class="complaint-form modern-form">
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-user"></i>
+                        Patient Name
+                    </label>
+                    <input type="text" name="Patient_Name" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-tag"></i>
+                        Complaint Type
+                    </label>
+                    <input type="text" name="Complaint_Type" placeholder="e.g., Appointment, Billing, Service" required>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-align-left"></i>
+                        Description
+                    </label>
+                    <textarea name="Description" rows="5" placeholder="Please provide details about your complaint..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary btn-block">
+                    <i class="fas fa-paper-plane"></i>
+                    Submit Complaint
+                </button>
+            </form>
+        </div>
+
+        <!-- Track Complaint Card -->
+        <div class="content-panel" id="track-form">
+            <div class="panel-header">
+                <h2>
+                    <i class="fas fa-search"></i>
+                    Track a Complaint
+                </h2>
+            </div>
+            <form action="/web/track" method="post" class="complaint-form modern-form">
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-hashtag"></i>
+                        Complaint ID
+                    </label>
+                    <input type="text" name="Complaint_ID" placeholder="e.g. CMP-6446" required>
+                    <small class="form-hint">Enter the Complaint ID you received when you submitted your complaint</small>
+                </div>
+
+                <button type="submit" class="btn-primary btn-block">
+                    <i class="fas fa-search"></i>
+                    Track Complaint
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Complaint Result -->
+    {% if complaint %}
+        <div class="content-panel result-panel">
+            <div class="panel-header">
+                <h2>
+                    <i class="fas fa-info-circle"></i>
+                    Complaint Details
+                </h2>
+            </div>
+            <div class="result-grid">
+                <div class="result-item">
+                    <div class="result-label">
+                        <i class="fas fa-hashtag"></i>
+                        Complaint ID
+                    </div>
+                    <div class="result-value">{{ complaint_id }}</div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">
+                        <i class="fas fa-user"></i>
+                        Patient Name
+                    </div>
+                    <div class="result-value">{{ complaint.Patient_Name }}</div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">
+                        <i class="fas fa-tag"></i>
+                        Complaint Type
+                    </div>
+                    <div class="result-value">{{ complaint.Complaint_Type }}</div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">
+                        <i class="fas fa-calendar"></i>
+                        Date Submitted
+                    </div>
+                    <div class="result-value">{{ complaint.Date_Submitted }}</div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">
+                        <i class="fas fa-info-circle"></i>
+                        Status
+                    </div>
+                    <div class="result-value">
+                        <span class="status-badge status-{{ complaint.Status.lower().replace(' ', '-') }}">
+                            {{ complaint.Status }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="result-item full-width">
+                    <div class="result-label">
+                        <i class="fas fa-align-left"></i>
+                        Description
+                    </div>
+                    <div class="result-value">{{ complaint.Description }}</div>
+                </div>
+                
+                <div class="result-item full-width">
+                    <div class="result-label">
+                        <i class="fas fa-comment"></i>
+                        Admin Comment
+                    </div>
+                    <div class="result-value">
+                        {{ complaint.Admin_Comment or "No comment yet. Your complaint is being reviewed." }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

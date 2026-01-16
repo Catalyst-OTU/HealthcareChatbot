@@ -1,49 +1,241 @@
-
 {% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <i class="fas fa-heartbeat"></i>
+            <span>Healthcare Portal</span>
+        </div>
+    </div>
+    <div class="sidebar-profile">
+        <div class="profile-icon">
+            <i class="fas fa-user-shield"></i>
+        </div>
+        <div class="profile-info">
+            <div class="profile-name">Admin</div>
+            <div class="profile-role">Administrator</div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <div class="nav-label">MAIN</div>
+            <a href="/admin" class="nav-link active">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-label">MANAGEMENT</div>
+            <a href="/admin" class="nav-link" id="all-complaints-link">
+                <i class="fas fa-users"></i>
+                <span>All Complaints</span>
+            </a>
+        </div>
+    </nav>
+    <div class="sidebar-footer">
+        <a href="/logout" class="nav-link logout-link">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </a>
+    </div>
+</aside>
+{% endblock %}
+
+{% block header %}
+<div class="page-header">
+    <h1 class="page-title">Dashboard Overview</h1>
+    <div class="header-actions">
+        <button class="btn-icon" onclick="location.reload()">
+            <i class="fas fa-sync-alt"></i>
+            Refresh
+        </button>
+        <button class="btn-icon" onclick="exportData()">
+            <i class="fas fa-download"></i>
+            Export
+        </button>
+    </div>
+</div>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="header-admin">
-        <h2>Admin Dashboard</h2>
-        <a href="/logout" class="logout-btn">Logout</a>
+<div class="dashboard-container">
+    <!-- Key Metrics Cards -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-icon blue">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">TOTAL PATIENTS</div>
+                <div class="metric-value" id="total-patients">0</div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="patients-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon green">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">TOTAL COMPLAINTS</div>
+                <div class="metric-value" id="total-complaints">0</div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="complaints-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon orange">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">PENDING</div>
+                <div class="metric-value" id="pending-complaints">0</div>
+                <div class="metric-change negative">
+                    <i class="fas fa-arrow-down"></i>
+                    <span id="pending-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon red">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">RESOLVED</div>
+                <div class="metric-value" id="resolved-complaints">0</div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="resolved-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="complaints-table-container">
-        <table id="complaints-table">
-            <thead>
-                <tr>
-                    <th>Complaint ID</th>
-                    <th>Patient Name</th>
-                    <th>Complaint Type</th>
-                    <th>Description</th>
-                    <th>Date Submitted</th>
-                    <th>Status</th>
-                    <th>Admin Comment</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Complaints will be loaded here via JS -->
-            </tbody>
-        </table>
+    
+    <!-- Operational Metrics -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-icon red">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">IN PROGRESS</div>
+                <div class="metric-value" id="in-progress-complaints">0</div>
+                <div class="metric-change negative">
+                    <i class="fas fa-arrow-down"></i>
+                    <span id="in-progress-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon orange">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">TODAY'S COMPLAINTS</div>
+                <div class="metric-value" id="today-complaints">0</div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="today-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon red">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">URGENT</div>
+                <div class="metric-value" id="urgent-complaints">0</div>
+                <div class="metric-change negative">
+                    <i class="fas fa-arrow-down"></i>
+                    <span id="urgent-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon blue">
+                <i class="fas fa-comments"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">REQUIRES COMMENT</div>
+                <div class="metric-value" id="needs-comment">0</div>
+                <div class="metric-change negative">
+                    <i class="fas fa-arrow-down"></i>
+                    <span id="needs-comment-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
     </div>
-    <!-- Modal for editing -->
-    <div id="edit-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3>Edit Complaint</h3>
-            <form id="edit-form">
-                <input type="hidden" id="edit-id">
-                <label>Status</label>
-                <select id="edit-status">
-                    <option value="Pending">Pending</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Resolved">Resolved</option>
-                </select>
-                <label>Admin Comment</label>
-                <textarea id="edit-comment" rows="4"></textarea>
-                <button type="submit">Save Changes</button>
-            </form>
+    
+    <!-- Recent Complaints Table -->
+    <div class="content-panel">
+        <div class="panel-header">
+            <h2>Recent Complaints</h2>
+            <button class="btn-text" onclick="showAllComplaints()">View All</button>
+        </div>
+        <div id="complaints-table-container" class="table-container">
+            <table id="complaints-table">
+                <thead>
+                    <tr>
+                        <th>COMPLAINT ID</th>
+                        <th>PATIENT NAME</th>
+                        <th>COMPLAINT TYPE</th>
+                        <th>DATE</th>
+                        <th>STATUS</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Complaints will be loaded here via JS -->
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
+
+<!-- Modal for editing -->
+<div id="edit-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Edit Complaint</h3>
+        <form id="edit-form">
+            <input type="hidden" id="edit-id">
+            <label>Status</label>
+            <select id="edit-status">
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Resolved">Resolved</option>
+            </select>
+            <label>Admin Comment</label>
+            <textarea id="edit-comment" rows="4"></textarea>
+            <button type="submit" class="btn-primary">Save Changes</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
 <script src="/static/admin.js"></script>
+<script>
+function exportData() {
+    alert('Export functionality coming soon!');
+}
+
+function showAllComplaints() {
+    document.getElementById('all-complaints-link').click();
+}
+</script>
 {% endblock %}
