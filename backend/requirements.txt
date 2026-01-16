@@ -7,3 +7,4 @@ setuptools
 jinja2 
 python-multipart
 firebase-admin 
+itsdangerous

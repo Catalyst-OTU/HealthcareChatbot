@@ -1,0 +1,49 @@
+
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="header-admin">
+        <h2>Admin Dashboard</h2>
+        <a href="/logout" class="logout-btn">Logout</a>
+    </div>
+    <div id="complaints-table-container">
+        <table id="complaints-table">
+            <thead>
+                <tr>
+                    <th>Complaint ID</th>
+                    <th>Patient Name</th>
+                    <th>Complaint Type</th>
+                    <th>Description</th>
+                    <th>Date Submitted</th>
+                    <th>Status</th>
+                    <th>Admin Comment</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Complaints will be loaded here via JS -->
+            </tbody>
+        </table>
+    </div>
+    <!-- Modal for editing -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Edit Complaint</h3>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
+                <label>Status</label>
+                <select id="edit-status">
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Resolved">Resolved</option>
+                </select>
+                <label>Admin Comment</label>
+                <textarea id="edit-comment" rows="4"></textarea>
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="/static/admin.js"></script>
+{% endblock %}
