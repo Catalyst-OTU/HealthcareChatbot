@@ -6,4 +6,4 @@ python-dotenv==1.0.1
 setuptools
 jinja2 
 python-multipart
-firebase-admin
+firebase-admin 
