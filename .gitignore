@@ -9,3 +9,4 @@ instance/
 *.sqlite3
 *.log
 /node_modules/
+backend/serviceAccountKey.json
