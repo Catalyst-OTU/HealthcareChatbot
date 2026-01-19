@@ -284,15 +284,39 @@
         <h3>Edit Complaint</h3>
         <form id="edit-form">
             <input type="hidden" id="edit-id">
-            <label>Status</label>
-            <select id="edit-status">
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Resolved">Resolved</option>
-            </select>
-            <label>Admin Comment</label>
-            <textarea id="edit-comment" rows="4"></textarea>
-            <button type="submit" class="btn-primary">Save Changes</button>
+            
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-align-left"></i>
+                    Description
+                </label>
+                <textarea id="edit-description" rows="4" readonly disabled class="readonly-field"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-info-circle"></i>
+                    Status
+                </label>
+                <select id="edit-status">
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Resolved">Resolved</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-comment"></i>
+                    Admin Comment
+                </label>
+                <textarea id="edit-comment" rows="4" placeholder="Enter your comment here..."></textarea>
+            </div>
+            
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-save"></i>
+                Save Changes
+            </button>
         </form>
     </div>
 </div>

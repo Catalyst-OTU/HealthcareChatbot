@@ -787,6 +787,34 @@ table tbody tr:last-child td {
     font-size: 14px;
 }
 
+#edit-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#edit-form .form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#edit-form .form-group label i {
+    color: #3498db;
+    font-size: 14px;
+}
+
+.readonly-field {
+    background: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+    resize: none;
+}
+
+.readonly-field:disabled {
+    opacity: 1;
+}
+
 /* CONTAINER (for backward compatibility) */
 .container {
     max-width: 900px;

@@ -229,19 +229,39 @@ function renderComplaintsTable(complaints) {
         const row = document.createElement('tr');
         const statusClass = complaint.Status.toLowerCase().replace(' ', '-');
         
+        // Debug: Log first complaint to check if Description exists
+        if (pageItems.indexOf(complaint) === 0) {
+            console.log('Sample complaint object:', complaint);
+            console.log('Description value:', complaint.Description);
+            console.log('Description type:', typeof complaint.Description);
+        }
+        
+        // Use the complaint object directly via closure instead of data attributes
+        // This avoids any escaping issues with special characters
+        const button = document.createElement('button');
+        button.className = 'action-btn view';
+        button.innerHTML = '<i class="fas fa-eye"></i> View';
+        button.addEventListener('click', function() {
+            // Access complaint properties directly from closure
+            const description = complaint.Description || complaint.description || '';
+            const adminComment = complaint.Admin_Comment || complaint.admin_comment || '';
+            editComplaint(
+                complaint.id,
+                complaint.Status || 'Pending',
+                description,
+                adminComment
+            );
+        });
+        
         row.innerHTML = `
             <td><strong>#${complaint.id}</strong></td>
             <td>${complaint.Patient_Name}</td>
             <td>${complaint.Complaint_Type}</td>
             <td>${complaint.Date_Submitted}</td>
             <td><span class="status-badge status-${statusClass}">${complaint.Status}</span></td>
-            <td>
-                <button class="action-btn view" onclick="editComplaint('${complaint.id}', '${complaint.Status}', '${escapeHtml(complaint.Admin_Comment || '')}')">
-                    <i class="fas fa-eye"></i>
-                    View
-                </button>
-            </td>
+            <td></td>
         `;
+        row.querySelector('td:last-child').appendChild(button);
         tbody.appendChild(row);
     });
 }
@@ -344,10 +364,20 @@ function exportData() {
     URL.revokeObjectURL(url);
 }
 
-function editComplaint(id, status, comment) {
+function editComplaint(id, status, description, comment) {
+    // Handle description - check if it exists and has content
+    let displayDescription = 'No description available';
+    if (description && description.trim().length > 0) {
+        displayDescription = description;
+    }
+    
+    // Handle comment
+    const displayComment = comment && comment.trim().length > 0 ? comment : '';
+    
     document.getElementById('edit-id').value = id;
-    document.getElementById('edit-status').value = status;
-    document.getElementById('edit-comment').value = unescapeHtml(comment);
+    document.getElementById('edit-status').value = status || 'Pending';
+    document.getElementById('edit-description').value = displayDescription;
+    document.getElementById('edit-comment').value = displayComment;
     document.getElementById('edit-modal').style.display = 'block';
 }
 
