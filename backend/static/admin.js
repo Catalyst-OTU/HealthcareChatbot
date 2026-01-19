@@ -1,9 +1,16 @@
 let allComplaints = [];
+let filteredComplaints = [];
+let currentPage = 1;
+let pageSize = 10;
 
 document.addEventListener('DOMContentLoaded', () => {
     loadComplaints();
+    setupModal();
+    setupFilters();
+    setupPagination();
+});
 
-    // Modal elements
+function setupModal() {
     const modal = document.getElementById('edit-modal');
     const closeBtn = document.querySelector('.close');
     const editForm = document.getElementById('edit-form');
@@ -46,7 +53,39 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error('Error:', error));
         });
     }
-});
+}
+
+function setupFilters() {
+    const inputs = [
+        'filter-patient',
+        'filter-id',
+        'filter-type',
+        'filter-status',
+        'filter-date-from',
+        'filter-date-to'
+    ];
+
+    inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => applyFilters());
+            el.addEventListener('change', () => applyFilters());
+        }
+    });
+
+    // Quick status chips
+    const chips = document.querySelectorAll('.quick-filters .chip');
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            chips.forEach(c => c.classList.remove('chip-active'));
+            chip.classList.add('chip-active');
+            const status = chip.dataset.status || '';
+            const statusSelect = document.getElementById('filter-status');
+            if (statusSelect) statusSelect.value = status;
+            applyFilters();
+        });
+    });
+}
 
 function loadComplaints() {
     fetch('/api/complaints')
@@ -54,7 +93,7 @@ function loadComplaints() {
         .then(complaints => {
             allComplaints = complaints;
             updateDashboardMetrics(complaints);
-            displayRecentComplaints(complaints);
+            applyFilters(); // render table and counts
         })
         .catch(error => console.error('Error:', error));
 }
@@ -125,18 +164,68 @@ function updateMetricChange(id, value) {
     }
 }
 
-function displayRecentComplaints(complaints) {
+function applyFilters() {
+    const patient = normalize(document.getElementById('filter-patient')?.value);
+    const id = normalize(document.getElementById('filter-id')?.value);
+    const type = normalize(document.getElementById('filter-type')?.value);
+    const status = document.getElementById('filter-status')?.value || '';
+    const dateFrom = document.getElementById('filter-date-from')?.value;
+    const dateTo = document.getElementById('filter-date-to')?.value;
+
+    filteredComplaints = allComplaints.filter(c => {
+        const patientMatch = !patient || normalize(c.Patient_Name).includes(patient);
+        const idMatch = !id || normalize(c.id).includes(id);
+        const typeMatch = !type || normalize(c.Complaint_Type).includes(type);
+        const statusMatch = !status || c.Status === status;
+        const dateMatch = withinDateRange(c.Date_Submitted, dateFrom, dateTo);
+        return patientMatch && idMatch && typeMatch && statusMatch && dateMatch;
+    });
+
+    updateResultsCount(filteredComplaints.length);
+    currentPage = 1;
+    renderComplaintsTable(filteredComplaints);
+}
+
+function withinDateRange(dateString, start, end) {
+    if (!start && !end) return true;
+    const date = new Date(dateString);
+    if (isNaN(date)) return false;
+    if (start) {
+        const startDate = new Date(start);
+        if (date < startDate) return false;
+    }
+    if (end) {
+        const endDate = new Date(end);
+        if (date > endDate) return false;
+    }
+    return true;
+}
+
+function normalize(value = '') {
+    return String(value).toLowerCase().trim();
+}
+
+function updateResultsCount(count) {
+    const el = document.getElementById('results-count');
+    if (el) el.textContent = count;
+}
+
+function renderComplaintsTable(complaints) {
     const tbody = document.querySelector('#complaints-table tbody');
     if (!tbody) return;
     
     tbody.innerHTML = '';
     
-    // Sort by date (most recent first) and take top 10
     const sortedComplaints = [...complaints]
-        .sort((a, b) => new Date(b.Date_Submitted) - new Date(a.Date_Submitted))
-        .slice(0, 10);
+        .sort((a, b) => new Date(b.Date_Submitted) - new Date(a.Date_Submitted));
+
+    const totalPages = Math.max(1, Math.ceil(sortedComplaints.length / pageSize));
+    if (currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage - 1) * pageSize;
+    const pageItems = sortedComplaints.slice(start, start + pageSize);
+    updatePageInfo(currentPage, totalPages);
     
-    sortedComplaints.forEach(complaint => {
+    pageItems.forEach(complaint => {
         const row = document.createElement('tr');
         const statusClass = complaint.Status.toLowerCase().replace(' ', '-');
         
@@ -155,6 +244,104 @@ function displayRecentComplaints(complaints) {
         `;
         tbody.appendChild(row);
     });
+}
+
+function setupPagination() {
+    const pageSizeSelect = document.getElementById('page-size-select');
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+
+    if (pageSizeSelect) {
+        pageSizeSelect.addEventListener('change', () => {
+            pageSize = parseInt(pageSizeSelect.value, 10) || 10;
+            currentPage = 1;
+            renderComplaintsTable(filteredComplaints);
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage -= 1;
+                renderComplaintsTable(filteredComplaints);
+            }
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            const totalPages = Math.max(1, Math.ceil((filteredComplaints.length || 0) / pageSize));
+            if (currentPage < totalPages) {
+                currentPage += 1;
+                renderComplaintsTable(filteredComplaints);
+            }
+        });
+    }
+}
+
+function updatePageInfo(page, totalPages) {
+    const info = document.getElementById('page-info');
+    if (info) info.textContent = `Page ${page} of ${totalPages}`;
+
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+    if (prevBtn) prevBtn.disabled = page <= 1;
+    if (nextBtn) nextBtn.disabled = page >= totalPages;
+}
+
+function clearFilters() {
+    const fields = ['filter-patient', 'filter-id', 'filter-type', 'filter-status', 'filter-date-from', 'filter-date-to'];
+    fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+
+    const chips = document.querySelectorAll('.quick-filters .chip');
+    chips.forEach(c => c.classList.remove('chip-active'));
+    const allChip = document.querySelector('.quick-filters .chip[data-status=""]');
+    if (allChip) allChip.classList.add('chip-active');
+
+    applyFilters();
+    const table = document.getElementById('complaints-table');
+    if (table) table.scrollIntoView({ behavior: 'smooth' });
+}
+
+function showAllComplaints() {
+    clearFilters();
+}
+
+function exportData() {
+    const data = (filteredComplaints && filteredComplaints.length) ? filteredComplaints : allComplaints;
+    if (!data || data.length === 0) {
+        alert('No complaints to export.');
+        return;
+    }
+
+    const headers = ['Complaint ID', 'Patient Name', 'Complaint Type', 'Description', 'Date Submitted', 'Status', 'Admin Comment'];
+    const rows = data.map(c => [
+        c.id,
+        c.Patient_Name,
+        c.Complaint_Type,
+        c.Description,
+        c.Date_Submitted,
+        c.Status,
+        c.Admin_Comment || ''
+    ]);
+
+    const csv = [headers, ...rows]
+        .map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const timestamp = new Date().toISOString().slice(0, 10);
+    link.download = `complaints-${timestamp}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }
 
 function editComplaint(id, status, comment) {

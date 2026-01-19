@@ -177,6 +177,14 @@ body {
     transition: background 0.3s;
 }
 
+.btn-icon.secondary {
+    background: #6c757d;
+}
+
+.btn-icon.secondary:hover {
+    background: #5a6268;
+}
+
 .btn-icon:hover {
     background: #2980b9;
 }
@@ -552,6 +560,144 @@ table tbody tr:hover {
 
 table tbody tr:last-child td {
     border-bottom: none;
+}
+
+/* FILTERS */
+.filters {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-group label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.filter-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.results-count {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.quick-filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.quick-filter-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.chip {
+    border: 1px solid #e0e0e0;
+    background: white;
+    color: #2c3e50;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chip:hover {
+    border-color: #3498db;
+    color: #3498db;
+}
+
+.chip-active {
+    background: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+/* PAGINATION */
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.page-size {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #2c3e50;
+}
+
+.page-size select {
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+}
+
+.page-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-btn {
+    background: white;
+    border: 1px solid #e0e0e0;
+    color: #2c3e50;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+    border-color: #3498db;
+    color: #3498db;
+}
+
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#page-info {
+    font-weight: 600;
+    color: #2c3e50;
 }
 
 /* ACTION BUTTONS */

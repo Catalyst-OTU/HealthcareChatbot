@@ -187,6 +187,61 @@
             <button class="btn-text" onclick="showAllComplaints()">View All</button>
         </div>
         <div id="complaints-table-container" class="table-container">
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Patient Name</label>
+                        <input type="text" id="filter-patient" placeholder="e.g. Jane Doe">
+                    </div>
+                    <div class="filter-group">
+                        <label>Complaint ID</label>
+                        <input type="text" id="filter-id" placeholder="e.g. CMP-1234">
+                    </div>
+                    <div class="filter-group">
+                        <label>Complaint Type</label>
+                        <input type="text" id="filter-type" placeholder="e.g. Billing">
+                    </div>
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select id="filter-status">
+                            <option value="">All</option>
+                            <option value="Pending">Pending</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Resolved">Resolved</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Date From</label>
+                        <input type="date" id="filter-date-from">
+                    </div>
+                    <div class="filter-group">
+                        <label>Date To</label>
+                        <input type="date" id="filter-date-to">
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <div class="results-count">Showing <span id="results-count">0</span> result(s)</div>
+                    <div class="filter-buttons">
+                        <button type="button" class="btn-text" onclick="clearFilters()">Clear Filters</button>
+                        <button type="button" class="btn-icon secondary" onclick="exportData()">
+                            <i class="fas fa-file-export"></i>
+                            Export CSV
+                        </button>
+                        <button type="button" class="btn-icon" onclick="applyFilters()">Apply Filters</button>
+                    </div>
+                </div>
+
+                <div class="quick-filters">
+                    <span class="quick-filter-label">Quick status:</span>
+                    <button type="button" class="chip chip-active" data-status="">All</button>
+                    <button type="button" class="chip" data-status="Pending">Pending</button>
+                    <button type="button" class="chip" data-status="In Progress">In Progress</button>
+                    <button type="button" class="chip" data-status="Resolved">Resolved</button>
+                </div>
+            </div>
+
             <table id="complaints-table">
                 <thead>
                     <tr>
@@ -202,6 +257,22 @@
                     <!-- Complaints will be loaded here via JS -->
                 </tbody>
             </table>
+            <div class="pagination">
+                <div class="page-size">
+                    <label for="page-size-select">Rows per page</label>
+                    <select id="page-size-select">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <div class="page-controls">
+                    <button class="page-btn" id="prev-page">&laquo;</button>
+                    <span id="page-info">Page 1 of 1</span>
+                    <button class="page-btn" id="next-page">&raquo;</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -229,13 +300,4 @@
 
 {% block scripts %}
 <script src="/static/admin.js"></script>
-<script>
-function exportData() {
-    alert('Export functionality coming soon!');
-}
-
-function showAllComplaints() {
-    document.getElementById('all-complaints-link').click();
-}
-</script>
 {% endblock %}
