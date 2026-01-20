@@ -3,7 +3,10 @@
 {% block title %}Patient Portal{% endblock %}
 
 {% block sidebar %}
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
+    <button class="sidebar-toggle" id="sidebar-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
     <div class="sidebar-header">
         <div class="logo">
             <i class="fas fa-heartbeat"></i>
@@ -88,7 +91,11 @@
                         <i class="fas fa-tag"></i>
                         Complaint Type
                     </label>
-                    <input type="text" name="Complaint_Type" placeholder="e.g., Appointment, Billing, Service" required>
+                    <select name="Complaint_Type" required>
+                        <option value="" disabled selected>Select complaint type</option>
+                        <option value="In Patient">In Patient</option>
+                        <option value="Out Patient">Out Patient</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -207,4 +214,68 @@
         </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Sidebar toggle functionality for patient portal
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    
+    const sidebarToggle = document.createElement('button');
+    sidebarToggle.className = 'sidebar-toggle';
+    sidebarToggle.id = 'sidebar-toggle';
+    sidebarToggle.innerHTML = '<i class="fas fa-bars"></i>';
+    sidebarToggle.setAttribute('aria-label', 'Toggle sidebar');
+    document.body.appendChild(sidebarToggle);
+    
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    
+    function handleSidebarToggle() {
+        if (window.innerWidth <= 768) {
+            sidebar.classList.toggle('mobile-open');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.toggle('active');
+            }
+        } else {
+            sidebar.classList.toggle('collapsed');
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                if (sidebar.classList.contains('collapsed')) {
+                    mainContent.style.marginLeft = '60px';
+                } else {
+                    mainContent.style.marginLeft = '280px';
+                }
+            }
+        }
+    }
+    
+    sidebarToggle.addEventListener('click', handleSidebarToggle);
+    
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('active');
+        });
+    }
+    
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            sidebar.classList.remove('mobile-open');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.remove('active');
+            }
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                if (sidebar.classList.contains('collapsed')) {
+                    mainContent.style.marginLeft = '60px';
+                } else {
+                    mainContent.style.marginLeft = '280px';
+                }
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

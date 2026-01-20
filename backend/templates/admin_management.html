@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Management{% endblock %}
+
+{% block sidebar %}
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <i class="fas fa-heartbeat"></i>
+            <span>Healthcare Portal</span>
+        </div>
+    </div>
+    <div class="sidebar-profile">
+        <div class="profile-icon">
+            <i class="fas fa-user-shield"></i>
+        </div>
+        <div class="profile-info">
+            <div class="profile-name" id="current-username">Admin</div>
+            <div class="profile-role" id="admin-role">Administrator</div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <div class="nav-label">MAIN</div>
+            <a href="/admin" class="nav-link">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/admin/management" class="nav-link active">
+                <i class="fas fa-users-cog"></i>
+                <span>Admin Management</span>
+            </a>
+        </div>
+    </nav>
+    <div class="sidebar-footer">
+        <a href="/logout" class="nav-link logout-link">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </a>
+    </div>
+</aside>
+{% endblock %}
+
+{% block header %}
+<div class="page-header">
+    <h1 class="page-title">Admin Management</h1>
+    <div class="header-actions">
+        <button class="btn-icon secondary" onclick="exportAdmins()">
+            <i class="fas fa-download"></i>
+            Export
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Change Password Panel (All Admins) -->
+    <div class="content-panel">
+        <div class="panel-header">
+            <h2>
+                <i class="fas fa-key"></i>
+                Change My Password
+            </h2>
+        </div>
+        <form id="change-password-form" class="modern-form">
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-lock"></i>
+                    Current Password
+                </label>
+                <input type="password" id="current-password" placeholder="Enter current password" required>
+            </div>
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-lock"></i>
+                    New Password
+                </label>
+                <input type="password" id="new-password" placeholder="Enter new password (min 6 characters)" required minlength="6">
+            </div>
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-lock"></i>
+                    Confirm New Password
+                </label>
+                <input type="password" id="confirm-password" placeholder="Confirm new password" required minlength="6">
+            </div>
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-save"></i>
+                Update Password
+            </button>
+        </form>
+    </div>
+
+    <!-- Admin Management Panel (Super Admin Only) -->
+    <div id="super-admin-panel" class="content-panel" style="display: none;">
+        <div class="panel-header">
+            <h2>
+                <i class="fas fa-user-plus"></i>
+                Add New Admin
+            </h2>
+        </div>
+        <form id="add-admin-form" class="modern-form">
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-user"></i>
+                    Username
+                </label>
+                <input type="text" id="admin-username" placeholder="Enter username" required>
+            </div>
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-lock"></i>
+                    Password
+                </label>
+                <input type="password" id="admin-password" placeholder="Enter password (min 6 characters)" required minlength="6">
+            </div>
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-plus"></i>
+                Add Admin
+            </button>
+        </form>
+    </div>
+
+    <!-- Filters (Super Admin Only) -->
+    <div id="filters-panel" class="content-panel" style="display: none;">
+        <div class="panel-header">
+            <h2>
+                <i class="fas fa-filter"></i>
+                Filters
+            </h2>
+        </div>
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label>Username</label>
+                <input type="text" id="filter-username" placeholder="Search username...">
+            </div>
+            <div class="filter-group">
+                <label>Role</label>
+                <select id="filter-role">
+                    <option value="">All</option>
+                    <option value="super">Super Admin</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+        </div>
+        <div class="filter-actions">
+            <div class="results-count">Showing <span id="results-count">0</span> admin(s)</div>
+            <div class="filter-buttons">
+                <button type="button" class="btn-text" onclick="clearAdminFilters()">Clear Filters</button>
+                <button type="button" class="btn-icon" onclick="applyAdminFilters()">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admins List (Super Admin Only) -->
+    <div id="admins-list-panel" class="content-panel" style="display: none;">
+        <div class="panel-header">
+            <h2>
+                <i class="fas fa-users"></i>
+                All Admins
+            </h2>
+        </div>
+        <div class="table-container">
+            <table id="admins-table">
+                <thead>
+                    <tr>
+                        <th>USERNAME</th>
+                        <th>ROLE</th>
+                        <th>CREATED AT</th>
+                        <th>CREATED BY</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Admins will be loaded here via JS -->
+                </tbody>
+            </table>
+            <div class="pagination">
+                <div class="page-size">
+                    <label for="admin-page-size-select">Rows per page</label>
+                    <select id="admin-page-size-select">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <div class="page-controls">
+                    <button class="page-btn" id="admin-prev-page">&laquo;</button>
+                    <span id="admin-page-info">Page 1 of 1</span>
+                    <button class="page-btn" id="admin-next-page">&raquo;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeDeleteModal()">&times;</span>
+        <h3>Delete Admin</h3>
+        <p>Are you sure you want to delete admin <strong id="delete-username"></strong>?</p>
+        <p class="warning-text">This action cannot be undone.</p>
+        <div class="modal-actions">
+            <button type="button" class="btn-text" onclick="closeDeleteModal()">Cancel</button>
+            <button type="button" class="btn-primary danger" id="confirm-delete-btn">
+                <i class="fas fa-trash"></i>
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/admin_management.js"></script>
+<script>
+// Sidebar toggle functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.createElement('button');
+    sidebarToggle.className = 'sidebar-toggle';
+    sidebarToggle.id = 'sidebar-toggle';
+    sidebarToggle.innerHTML = '<i class="fas fa-bars"></i>';
+    sidebarToggle.setAttribute('aria-label', 'Toggle sidebar');
+    document.body.appendChild(sidebarToggle);
+    
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    
+    // Desktop: Toggle collapsed state
+    function handleSidebarToggle() {
+        if (window.innerWidth <= 768) {
+            // Mobile: Toggle visibility
+            sidebar.classList.toggle('mobile-open');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.toggle('active');
+            }
+        } else {
+            // Desktop: Toggle collapsed state
+            sidebar.classList.toggle('collapsed');
+            // Update main content margin when collapsed
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                if (sidebar.classList.contains('collapsed')) {
+                    mainContent.style.marginLeft = '60px';
+                } else {
+                    mainContent.style.marginLeft = '280px';
+                }
+            }
+        }
+    }
+    
+    sidebarToggle.addEventListener('click', handleSidebarToggle);
+    
+    // Close sidebar when clicking overlay on mobile
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('active');
+        });
+    }
+    
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768 && 
+            sidebar.classList.contains('mobile-open') &&
+            !sidebar.contains(e.target) && 
+            !sidebarToggle.contains(e.target)) {
+            sidebar.classList.remove('mobile-open');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.remove('active');
+            }
+        }
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            // On desktop, remove mobile-open class
+            sidebar.classList.remove('mobile-open');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.remove('active');
+            }
+            // Restore proper margin
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                if (sidebar.classList.contains('collapsed')) {
+                    mainContent.style.marginLeft = '60px';
+                } else {
+                    mainContent.style.marginLeft = '280px';
+                }
+            }
+        }
+    });
+});
+
+function exportAdmins() {
+    // Export functionality
+    alert('Export functionality coming soon!');
+}
+</script>
+{% endblock %}

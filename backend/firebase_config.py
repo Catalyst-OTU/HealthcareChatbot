@@ -25,3 +25,5 @@ if not firebase_admin._apps:
     })
 
 complaints_ref = db.reference("complaints")
+admins_ref = db.reference("admins")
+users_ref = db.reference("users")

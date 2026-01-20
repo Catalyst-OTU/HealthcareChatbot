@@ -30,3 +30,42 @@ function addMessage(text, sender) {
     messages.appendChild(div);
     messages.scrollTop = messages.scrollHeight;
 }
+
+// Sidebar toggle functionality - defined early and globally
+window.toggleSidebar = function() {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('collapsed');
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem('sidebarCollapsed', isCollapsed);
+    }
+};
+
+// Initialize sidebar on DOMContentLoaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSidebarToggle);
+} else {
+    // DOM is already ready
+    initSidebarToggle();
+}
+
+function initSidebarToggle() {
+    // Restore sidebar state
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (isCollapsed) {
+            sidebar.classList.add('collapsed');
+        }
+    }
+
+    // Attach click listener
+    const btn = document.getElementById('sidebar-toggle');
+    if (btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.toggleSidebar();
+        });
+    }
+}
