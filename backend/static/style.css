@@ -1031,3 +1031,200 @@ hr {
 .result p {
     margin-bottom: 6px;
 }
+
+
+
+
+
+.user-msg {
+    background: #2563eb;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin: 6px 0;
+    align-self: flex-end;
+}
+
+.bot-msg {
+    background: #f1f5f9;
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin: 6px 0;
+    white-space: pre-line;
+}
+
+.system-msg {
+    background: #ecfeff;
+    border-left: 4px solid #06b6d4;
+}
+
+
+
+.complaint-success-card {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 10px 0;
+    display: flex;
+    gap: 15px;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.15);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.success-icon {
+    font-size: 2.5em;
+    color: #28a745;
+    font-weight: bold;
+    min-width: 50px;
+    text-align: center;
+    line-height: 1;
+}
+
+.success-content {
+    flex: 1;
+    color: #155724;
+}
+
+.success-content strong {
+    display: block;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+.complaint-id-box {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    margin: 10px 0;
+    border-left: 4px solid #28a745;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.id-label {
+    font-weight: 600;
+    color: #155724;
+}
+
+.id-value {
+    font-family: 'Courier New', monospace;
+    font-size: 1.15em;
+    font-weight: bold;
+    color: #28a745;
+    background: #f0f8f5;
+    padding: 8px 12px;
+    border-radius: 4px;
+    letter-spacing: 2px;
+    flex: 1;
+    min-width: 120px;
+}
+
+.copy-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.copy-btn:hover {
+    background: #218838;
+}
+
+.copy-btn:active {
+    transform: scale(0.98);
+}
+
+.id-instruction {
+    font-size: 0.9em;
+    margin: 10px 0 0 0;
+    color: #155724;
+    font-style: italic;
+}
+
+/* Chat styles */
+.chat-box {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    height: 400px;
+    overflow-y: auto;
+    background: #f9f9f9;
+    margin-bottom: 15px;
+}
+
+.user-msg {
+    background: #1E88E5;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin: 8px 0;
+    text-align: right;
+    max-width: 70%;
+    margin-left: auto;
+    word-wrap: break-word;
+}
+
+.bot-msg {
+    background: #E8F4F8;
+    color: #333;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin: 8px 0;
+    text-align: left;
+    border-left: 4px solid #1E88E5;
+}
+
+.system-msg {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.chat-input {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1em;
+}
+
+.chat-input button {
+    padding: 12px 24px;
+    background: #1E88E5;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.chat-input button:hover {
+    background: #1565C0;
+}
