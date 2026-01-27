@@ -11,3 +11,4 @@ instance/
 /node_modules/
 backend/serviceAccountKey.json
 .env
+dialogflow_key.json
