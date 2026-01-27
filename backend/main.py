@@ -1,3 +1,4 @@
+from click import confirm
 from fastapi import FastAPI, Request, Form, status, Depends, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -8,9 +9,12 @@ from datetime import datetime
 from typing import List, Dict, Optional
 from starlette.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
-
 import random
 import bcrypt
+import os
+from google.cloud import dialogflow_v2 as dialogflow
+from firebase_admin import credentials, db
+from dialogflow_config import SESSION_CLIENT, DIALOGFLOW_PROJECT_ID
 
 app = FastAPI(
     title="Healthcare Chatbot Backend",
@@ -33,9 +37,6 @@ class Complaint(BaseModel):
     Patient_Name: str
     Complaint_Type: str
     Description: str
-
-
-
 
 
 
@@ -64,6 +65,187 @@ def initialize_super_admin():
             })
     except Exception as e:
         print(f"Warning: Could not initialize super admin: {e}")
+
+
+
+
+
+
+
+class ChatRequest(BaseModel):
+    message: str
+    session_id: str
+
+
+@app.post("/chat")
+async def chat_with_bot(payload: ChatRequest):
+    try:
+        session = SESSION_CLIENT.session_path(
+            DIALOGFLOW_PROJECT_ID,
+            payload.session_id
+        )
+
+        text_input = dialogflow.TextInput(
+            text=payload.message,
+            language_code="en"
+        )
+
+        query_input = dialogflow.QueryInput(text=text_input)
+
+        response = SESSION_CLIENT.detect_intent(
+            request={"session": session, "query_input": query_input}
+        )
+
+        fulfillment_text = response.query_result.fulfillment_text or "I didn't understand that. Can you please rephrase?"
+
+        return {
+            "reply": fulfillment_text
+        }
+    except Exception as e:
+        print(f"Chat error: {e}")
+        return {
+            "reply": "An error occurred. Please try again."
+        }
+
+
+
+
+
+# ========== DIALOGFLOW WEBHOOK (Simplified) ==========
+@app.post("/webhook")
+async def dialogflow_webhook(request: Request):
+    """
+    Simplified webhook that just logs and returns acknowledgment.
+    Actual saving happens in /submit-complaint endpoint.
+    """
+    try:
+        body = await request.json()
+        query_result = body.get("queryResult", {})
+        
+        if not query_result:
+            return {"fulfillmentText": "Invalid request"}
+        
+        params = query_result.get("parameters", {})
+        intent_name = query_result.get("intent", {}).get("displayName", "")
+        
+        # Extract parameters
+        person_param = params.get("person", {})
+        patient_name = person_param.get("name") if isinstance(person_param, dict) else person_param
+        complaint_type = params.get("complaint_type", "")
+        description = params.get("description", "")
+
+        print(f"\n🔍 Webhook received - Intent: {intent_name}")
+        print(f"📋 Name: {patient_name} | Type: {complaint_type} | Desc: {description}\n")
+
+        # Acknowledge receipt - frontend will handle actual saving
+        if intent_name == "Submit Complaint" and patient_name and complaint_type and description:
+            return {
+                "fulfillmentText": f"Thank you {patient_name}. Your complaint has been successfully submitted"
+            }
+
+        return {"fulfillmentText": "Please provide all required information."}
+    
+    except Exception as e:
+        print(f"❌ Webhook error: {e}\n")
+        return {"fulfillmentText": "An error occurred."}
+
+
+# ========== NEW ENDPOINT: SAVE COMPLAINT AND GET ID ==========
+@app.post("/api/submit-complaint")
+async def submit_complaint(request: Request):
+    """
+    This endpoint receives complaint data from the frontend chat,
+    saves it to Firebase, generates an ID, and returns it as JSON.
+    """
+    try:
+        data = await request.json()
+        
+        patient_name = data.get("patient_name", "")
+        complaint_type = data.get("complaint_type", "")
+        description = data.get("description", "")
+        
+        print(f"\n📝 Saving complaint from API:")
+        print(f"   Name: {patient_name}")
+        print(f"   Type: {complaint_type}")
+        print(f"   Desc: {description}\n")
+        
+        if not (patient_name and complaint_type and description):
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Missing required fields"}
+            )
+        
+        # Generate Complaint ID
+        complaint_id = f"CMP-{random.randint(1000, 9999)}"
+        
+        # Save to Firebase
+        try:
+            complaints_ref.child(complaint_id).set({
+                "Patient_Name": patient_name,
+                "Complaint_Type": complaint_type,
+                "Description": description,
+                "Date_Submitted": datetime.now().strftime("%Y-%m-%d"),
+                "Status": "Pending",
+                "Admin_Comment": ""
+            })
+            
+            print(f"✅ Complaint saved: {complaint_id}\n")
+            
+            # Return success with Complaint ID
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "success": True,
+                    "complaint_id": complaint_id,
+                    "message": f"Thank you! Your complaint has been recorded. Your Complaint ID is {complaint_id}",
+                    "patient_name": patient_name
+                }
+            )
+        
+        except Exception as firebase_error:
+            print(f"❌ Firebase error: {firebase_error}\n")
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Error saving complaint to database"}
+            )
+    
+    except Exception as e:
+        print(f"❌ API error: {e}\n")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Internal server error"}
+        )
+
+
+
+@app.post("/web/submit", response_class=HTMLResponse)
+async def submit_web(
+    request: Request,
+    Patient_Name: str = Form(...),
+    Complaint_Type: str = Form(...),
+    Description: str = Form(...)
+):
+    complaint_id = generate_complaint_id()
+    date_submitted = datetime.now().strftime("%Y-%m-%d")
+    
+    complaints_ref.child(complaint_id).set({
+        "Patient_Name": Patient_Name,
+        "Complaint_Type": Complaint_Type,
+        "Description": Description,
+        "Date_Submitted": date_submitted,
+        "Status": "Pending",
+        "Admin_Comment": ""
+    })
+    
+    message = f"Thank you! Your complaint has been recorded. Your Complaint ID is {complaint_id}"
+    
+    return templates.TemplateResponse("web.html", {"request": request, "message": message})
+
+
+
+
+
+
 
 # Initialize super admin on startup
 @app.on_event("startup")
@@ -185,28 +367,6 @@ async def web(request: Request):
     return templates.TemplateResponse("web.html", {"request": request})
 
 # Handle form submission from web page
-@app.post("/web/submit", response_class=HTMLResponse)
-async def submit_web(
-    request: Request,
-    Patient_Name: str = Form(...),
-    Complaint_Type: str = Form(...),
-    Description: str = Form(...)
-):
-    complaint_id = generate_complaint_id()
-    date_submitted = datetime.now().strftime("%Y-%m-%d")
-    
-    complaints_ref.child(complaint_id).set({
-        "Patient_Name": Patient_Name,
-        "Complaint_Type": Complaint_Type,
-        "Description": Description,
-        "Date_Submitted": date_submitted,
-        "Status": "Pending",
-        "Admin_Comment": ""
-    })
-    
-    message = f"Thank you! Your complaint has been recorded. Your Complaint ID is {complaint_id}"
-    
-    return templates.TemplateResponse("web.html", {"request": request, "message": message})
 
 
 

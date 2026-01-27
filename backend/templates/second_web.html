@@ -88,6 +88,51 @@
         </div>
 
 
+
+
+        <div class="content-panel">
+            <div class="panel-header">
+                <h2>
+                    <i class="fas fa-file-medical"></i>
+                    Submit a Complaint
+                </h2>
+            </div>
+            <form action="/web/submit" method="post" class="complaint-form modern-form">
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-user"></i>
+                        Patient Name
+                    </label>
+                    <input type="text" name="Patient_Name" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-tag"></i>
+                        Complaint Type
+                    </label>
+                    <select name="Complaint_Type" required>
+                        <option value="" disabled selected>Select complaint type</option>
+                        <option value="In Patient">In Patient</option>
+                        <option value="Out Patient">Out Patient</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-align-left"></i>
+                        Description
+                    </label>
+                    <textarea name="Description" rows="5" placeholder="Please provide details about your complaint..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary btn-block">
+                    <i class="fas fa-paper-plane"></i>
+                    Submit Complaint
+                </button>
+            </form>
+        </div>
+
         <!-- Track Complaint Card -->
         <div class="content-panel" id="track-form">
             <div class="panel-header">
@@ -256,16 +301,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+
 <script>
 const sessionId = "patient-" + Math.random().toString(36).substring(7);
-
-// Track conversation state
-let conversationState = {
-    patientName: "",
-    complaintType: "",
-    description: "",
-    allFieldsCollected: false
-};
 
 async function sendMessage() {
     const input = document.getElementById("user-message");
@@ -274,175 +312,25 @@ async function sendMessage() {
     const message = input.value.trim();
     if (!message) return;
 
-    // Display user message
     chatBox.innerHTML += `<div class="user-msg">${message}</div>`;
     input.value = "";
 
-    try {
-        const response = await fetch("/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                message: message,
-                session_id: sessionId
-            })
-        });
+    const response = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            message: message,
+            session_id: sessionId
+        })
+    });
 
-        const data = await response.json();
-        const reply = data.reply;
-
-        // Display bot response
-        const formattedReply = reply.replace(/\n/g, '<br>');
-        chatBox.innerHTML += `<div class="bot-msg system-msg">${formattedReply}</div>`;
-
-        // ===== CHECK IF ALL FIELDS ARE COLLECTED =====
-        // Listen for when Dialogflow has collected all three fields
-        if (reply.includes("successfully submitted") && 
-            !conversationState.allFieldsCollected) {
-            
-            console.log("All fields collected! Preparing to save...");
-            conversationState.allFieldsCollected = true;
-            
-            // Give a short delay for user to see the Dialogflow message
-            setTimeout(() => {
-                saveComplaintToDatabase(chatBox);
-            }, 800);
-        }
-
-        chatBox.scrollTop = chatBox.scrollHeight;
-    } catch (error) {
-        console.error("Error:", error);
-        chatBox.innerHTML += `<div class="bot-msg system-msg">❌ Error sending message. Please try again.</div>`;
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
-}
-
-// ========== SAVE COMPLAINT TO DATABASE ==========
-async function saveComplaintToDatabase(chatBox) {
-    try {
-        // Extract data from chat by finding the correct order of messages
-        const allMessages = chatBox.querySelectorAll('.user-msg');
-        
-        console.log("Total user messages found:", allMessages.length);
-        
-        if (allMessages.length < 4) {
-            console.log("Not enough messages to extract data. Need at least 4 messages.");
-            console.log("Messages found:", allMessages.length);
-            return;
-        }
-        
-        // Get all user messages in order
-        const messages = Array.from(allMessages).map(msg => msg.textContent.trim());
-        
-        console.log("📝 All chat messages:", messages);
-        
-        // The order of Dialogflow slot-filling is:
-        // Message 0: "I have a complaint" (trigger message - user says this to start)
-        // Message 1: Patient Name (answer to "What is your name?")
-        // Message 2: Complaint Type (answer to "What type of complaint?")
-        // Message 3: Description (answer to "Please describe your complaint")
-        
-        const patientName = messages[1];      // Name provided by user (2nd message)
-        const complaintType = messages[2];    // Complaint type (3rd message)
-        const description = messages[3];      // Description (4th message)
-        
-        console.log("✅ Extracted data:", { 
-            patientName, 
-            complaintType, 
-            description 
-        });
-        
-        // Validate extracted data
-        if (!patientName || !complaintType || !description) {
-            console.error("❌ Missing required data:", { patientName, complaintType, description });
-            chatBox.innerHTML += `<div class="bot-msg system-msg">❌ Error: Could not extract complaint information. Please try again.</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-            return;
-        }
-        
-        // Call API to save complaint
-        const saveResponse = await fetch("/api/submit-complaint", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                patient_name: patientName,
-                complaint_type: complaintType,
-                description: description
-            })
-        });
-        
-        const saveData = await saveResponse.json();
-        
-        console.log("📡 API Response:", saveData);
-        
-        if (saveData.success) {
-            const complaintId = saveData.complaint_id;
-            
-            console.log("✅ Complaint saved with ID:", complaintId);
-            
-            // Store ID in sessionStorage
-            sessionStorage.setItem('lastComplaintId', complaintId);
-            sessionStorage.setItem('complaintSubmittedTime', new Date().toISOString());
-            
-            // Display success message with Complaint ID
-            displaySuccessCard(chatBox, complaintId, patientName);
-        } else {
-            console.error("❌ Error saving complaint:", saveData.error);
-            chatBox.innerHTML += `<div class="bot-msg system-msg">❌ Error recording complaint ID: ${saveData.error}. Please contact support.</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-    } catch (error) {
-        console.error("❌ Error in saveComplaintToDatabase:", error);
-        chatBox.innerHTML += `<div class="bot-msg system-msg">❌ Error saving complaint. Please try again.</div>`;
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
-}
-
-// ========== DISPLAY SUCCESS CARD WITH COMPLAINT ID ==========
-function displaySuccessCard(chatBox, complaintId, patientName) {
-    const successCard = `
-        <div class="bot-msg">
-            <div class="complaint-success-card">
-                <div class="success-icon">✓</div>
-                <div class="success-content">
-                    <strong>Success! Your complaint has been recorded.</strong>
-                    <div class="complaint-id-box">
-                        <span class="id-label">Complaint ID:</span>
-                        <span class="id-value">${complaintId}</span>
-                        <button class="copy-btn" onclick="copyToClipboard('${complaintId}')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
-                    </div>
-                    <p class="id-instruction">Save this ID to track your complaint status in the "Track Complaint" section</p>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    chatBox.innerHTML += successCard;
+    const data = await response.json();
+    chatBox.innerHTML += `<div class="bot-msg">${data.reply}</div>`;
     chatBox.scrollTop = chatBox.scrollHeight;
 }
-
-// ========== COPY COMPLAINT ID TO CLIPBOARD ==========
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        alert("Complaint ID copied: " + text);
-    }).catch(err => {
-        console.error("Failed to copy:", err);
-    });
-}
-
-// Allow Enter key to send message
-document.addEventListener('DOMContentLoaded', function() {
-    const userMessageInput = document.getElementById("user-message");
-    if (userMessageInput) {
-        userMessageInput.addEventListener("keypress", function(e) {
-            if (e.key === "Enter") {
-                sendMessage();
-            }
-        });
-    }
-});
 </script>
+
+
+
 
 {% endblock %}
