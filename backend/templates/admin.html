@@ -1,55 +1,357 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="container">
-    <h1>Admin Dashboard</h1>
+{% block title %}Admin Dashboard{% endblock %}
 
-    {% if message %}
-        <div class="alert success">{{ message }}</div>
-    {% endif %}
+{% block sidebar %}
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <i class="fas fa-heartbeat"></i>
+            <span>Healthcare Portal</span>
+        </div>
+    </div>
+    <div class="sidebar-profile">
+        <div class="profile-icon">
+            <i class="fas fa-user-shield"></i>
+        </div>
+        <div class="profile-info">
+            <div class="profile-name">Admin</div>
+            <div class="profile-role">Administrator</div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <div class="nav-label">MAIN</div>
+            <a href="/admin" class="nav-link active">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-label">MANAGEMENT</div>
+            <a href="/admin" class="nav-link" id="all-complaints-link">
+                <i class="fas fa-users"></i>
+                <span>All Complaints</span>
+            </a>
+            <a href="/admin/management" class="nav-link" id="admin-management-link" style="display: none;">
+                <i class="fas fa-users-cog"></i>
+                <span>Admin Management</span>
+            </a>
+        </div>
+    </nav>
+    <div class="sidebar-footer">
+        <a href="/logout" class="nav-link logout-link">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </a>
+    </div>
+</aside>
+{% endblock %}
 
-    {% if error %}
-        <div class="alert error">{{ error }}</div>
-    {% endif %}
-
-    <table class="complaints-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Patient</th>
-                <th>Type</th>
-                <th>Description</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Admin Comment</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for complaint in complaints %}
-            <tr>
-                <td>{{ complaint.Complaint_ID }}</td>
-                <td>{{ complaint.Patient_Name }}</td>
-                <td>{{ complaint.Complaint_Type }}</td>
-                <td>{{ complaint.Description }}</td>
-                <td>{{ complaint.Date_Submitted }}</td>
-                <td>{{ complaint.Status }}</td>
-                <td>{{ complaint.Admin_Comment }}</td>
-                <td>
-                    <form action="/admin/update" method="post">
-                        <input type="hidden" name="Complaint_ID" value="{{ complaint.Complaint_ID }}">
-                        <select name="Status">
-                            <option value="Pending" {% if complaint.Status == 'Pending' %}selected{% endif %}>Pending</option>
-                            <option value="In Progress" {% if complaint.Status == 'In Progress' %}selected{% endif %}>In Progress</option>
-                            <option value="Resolved" {% if complaint.Status == 'Resolved' %}selected{% endif %}>Resolved</option>
-                        </select>
-                        <input type="text" name="Admin_Comment" placeholder="Add comment">
-                        <button type="submit">Update</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+{% block header %}
+<div class="page-header">
+    <h1 class="page-title">Dashboard Overview</h1>
+    <div class="header-actions">
+        <button class="btn-icon" onclick="location.reload()">
+            <i class="fas fa-sync-alt"></i>
+            Refresh
+        </button>
+        <button class="btn-icon" onclick="exportData()">
+            <i class="fas fa-download"></i>
+            Export
+        </button>
+    </div>
 </div>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Key Metrics Cards -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-icon blue">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">TOTAL PATIENTS</div>
+                <div class="metric-value" id="total-patients">0</div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="patients-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon green">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">TOTAL COMPLAINTS</div>
+                <div class="metric-value" id="total-complaints">0</div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="complaints-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon orange">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">PENDING</div>
+                <div class="metric-value" id="pending-complaints">0</div>
+                <div class="metric-change negative">
+                    <i class="fas fa-arrow-down"></i>
+                    <span id="pending-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon red">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">RESOLVED</div>
+                <div class="metric-value" id="resolved-complaints">0</div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="resolved-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Operational Metrics -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-icon red">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">IN PROGRESS</div>
+                <div class="metric-value" id="in-progress-complaints">0</div>
+                <div class="metric-change negative">
+                    <i class="fas fa-arrow-down"></i>
+                    <span id="in-progress-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon orange">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">TODAY'S COMPLAINTS</div>
+                <div class="metric-value" id="today-complaints">0</div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="today-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon red">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">URGENT</div>
+                <div class="metric-value" id="urgent-complaints">0</div>
+                <div class="metric-change negative">
+                    <i class="fas fa-arrow-down"></i>
+                    <span id="urgent-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon blue">
+                <i class="fas fa-comments"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-label">REQUIRES COMMENT</div>
+                <div class="metric-value" id="needs-comment">0</div>
+                <div class="metric-change negative">
+                    <i class="fas fa-arrow-down"></i>
+                    <span id="needs-comment-change">0%</span> from last month
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Complaints Table -->
+    <div class="content-panel">
+        <div class="panel-header">
+            <h2>Recent Complaints</h2>
+            <button class="btn-text" onclick="showAllComplaints()">View All</button>
+        </div>
+        <div id="complaints-table-container" class="table-container">
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Patient Name</label>
+                        <input type="text" id="filter-patient" placeholder="e.g. Jane Doe">
+                    </div>
+                    <div class="filter-group">
+                        <label>Complaint ID</label>
+                        <input type="text" id="filter-id" placeholder="e.g. CMP-1234">
+                    </div>
+                    <div class="filter-group">
+                        <label>Complaint Type</label>
+                        <input type="text" id="filter-type" placeholder="e.g. Billing">
+                    </div>
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select id="filter-status">
+                            <option value="">All</option>
+                            <option value="Pending">Pending</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Resolved">Resolved</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Date From</label>
+                        <input type="date" id="filter-date-from">
+                    </div>
+                    <div class="filter-group">
+                        <label>Date To</label>
+                        <input type="date" id="filter-date-to">
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <div class="results-count">Showing <span id="results-count">0</span> result(s)</div>
+                    <div class="filter-buttons">
+                        <button type="button" class="btn-text" onclick="clearFilters()">Clear Filters</button>
+                        <button type="button" class="btn-icon secondary" onclick="exportData()">
+                            <i class="fas fa-file-export"></i>
+                            Export CSV
+                        </button>
+                        <button type="button" class="btn-icon" onclick="applyFilters()">Apply Filters</button>
+                    </div>
+                </div>
+
+                <div class="quick-filters">
+                    <span class="quick-filter-label">Quick status:</span>
+                    <button type="button" class="chip chip-active" data-status="">All</button>
+                    <button type="button" class="chip" data-status="Pending">Pending</button>
+                    <button type="button" class="chip" data-status="In Progress">In Progress</button>
+                    <button type="button" class="chip" data-status="Resolved">Resolved</button>
+                </div>
+            </div>
+
+            <table id="complaints-table">
+                <thead>
+                    <tr>
+                        <th>COMPLAINT ID</th>
+                        <th>PATIENT NAME</th>
+                        <th>COMPLAINT TYPE</th>
+                        <th>DATE</th>
+                        <th>STATUS</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Complaints will be loaded here via JS -->
+                </tbody>
+            </table>
+            <div class="pagination">
+                <div class="page-size">
+                    <label for="page-size-select">Rows per page</label>
+                    <select id="page-size-select">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <div class="page-controls">
+                    <button class="page-btn" id="prev-page">&laquo;</button>
+                    <span id="page-info">Page 1 of 1</span>
+                    <button class="page-btn" id="next-page">&raquo;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for editing -->
+<div id="edit-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Edit Complaint</h3>
+        <form id="edit-form">
+            <input type="hidden" id="edit-id">
+            
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-align-left"></i>
+                    Description
+                </label>
+                <textarea id="edit-description" rows="4" readonly disabled class="readonly-field"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-info-circle"></i>
+                    Status
+                </label>
+                <select id="edit-status">
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Resolved">Resolved</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-comment"></i>
+                    Admin Comment
+                </label>
+                <textarea id="edit-comment" rows="4" placeholder="Enter your comment here..."></textarea>
+            </div>
+            
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-save"></i>
+                Save Changes
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/admin.js"></script>
+<script>
+// Check if user is super admin and show/hide Admin Management link
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/api/admins/check-super');
+        const data = await response.json();
+        const adminManagementLink = document.getElementById('admin-management-link');
+        
+        if (adminManagementLink) {
+            if (data.is_super_admin) {
+                adminManagementLink.style.display = 'flex';
+            } else {
+                adminManagementLink.style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Error checking super admin status:', error);
+        // Hide link if there's an error
+        const adminManagementLink = document.getElementById('admin-management-link');
+        if (adminManagementLink) {
+            adminManagementLink.style.display = 'none';
+        }
+    }
+});
+</script>
 {% endblock %}

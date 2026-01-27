@@ -7,3 +7,5 @@ setuptools
 jinja2 
 python-multipart
 firebase-admin 
+itsdangerous
+bcrypt==4.0.1

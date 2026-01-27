@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login{% endblock %}
+
+{% block sidebar %}
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <i class="fas fa-heartbeat"></i>
+            <span>Healthcare Portal</span>
+        </div>
+    </div>
+    <div class="sidebar-profile">
+        <div class="profile-icon">
+            <i class="fas fa-user-shield"></i>
+        </div>
+        <div class="profile-info">
+            <div class="profile-name">Admin</div>
+            <div class="profile-role">Login Required</div>
+        </div>
+    </div>
+</aside>
+{% endblock %}
+
+{% block header %}
+<div class="page-header">
+    <h1 class="page-title">Admin Login</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="content-panel" style="max-width: 500px; margin: 50px auto;">
+        {% if error %}
+            <div class="alert error">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ error }}
+            </div>
+        {% endif %}
+        
+        <div class="panel-header">
+            <h2>
+                <i class="fas fa-lock"></i>
+                Administrator Access
+            </h2>
+        </div>
+        
+        <form action="/login" method="post" class="modern-form">
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-user"></i>
+                    Username
+                </label>
+                <input type="text" name="username" placeholder="Enter your username" required>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-key"></i>
+                    Password
+                </label>
+                <input type="password" name="password" placeholder="Enter your password" required>
+            </div>
+            
+            <button type="submit" class="btn-primary btn-block">
+                <i class="fas fa-sign-in-alt"></i>
+                Login
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Sidebar toggle functionality for login page
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    
+    const sidebarToggle = document.createElement('button');
+    sidebarToggle.className = 'sidebar-toggle';
+    sidebarToggle.id = 'sidebar-toggle';
+    sidebarToggle.innerHTML = '<i class="fas fa-bars"></i>';
+    sidebarToggle.setAttribute('aria-label', 'Toggle sidebar');
+    document.body.appendChild(sidebarToggle);
+    
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    
+    function handleSidebarToggle() {
+        if (window.innerWidth <= 768) {
+            // Mobile: Toggle visibility
+            sidebar.classList.toggle('mobile-open');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.toggle('active');
+            }
+        } else {
+            // Desktop: Toggle collapsed state
+            sidebar.classList.toggle('collapsed');
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                if (sidebar.classList.contains('collapsed')) {
+                    mainContent.style.marginLeft = '60px';
+                } else {
+                    mainContent.style.marginLeft = '280px';
+                }
+            }
+        }
+    }
+    
+    sidebarToggle.addEventListener('click', handleSidebarToggle);
+    
+    // Close sidebar when clicking overlay on mobile
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('active');
+        });
+    }
+    
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768 && 
+            sidebar.classList.contains('mobile-open') &&
+            !sidebar.contains(e.target) && 
+            !sidebarToggle.contains(e.target)) {
+            sidebar.classList.remove('mobile-open');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.remove('active');
+            }
+        }
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            // On desktop, remove mobile-open class
+            sidebar.classList.remove('mobile-open');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.remove('active');
+            }
+            // Restore proper margin
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                if (sidebar.classList.contains('collapsed')) {
+                    mainContent.style.marginLeft = '60px';
+                } else {
+                    mainContent.style.marginLeft = '280px';
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
